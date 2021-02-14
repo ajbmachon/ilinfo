@@ -21,12 +21,21 @@ class IliasFileParser:
 
     def parse_ilias_ini(self, file_path):
         d = parse_ini_to_dict(file_path, {
-        "server": ['http_path', 'absolute_path'],
-        "clients": ['path', 'inifile', 'datadir', 'default']
-    })
+            "server": ['http_path', 'absolute_path'],
+            "clients": ['path', 'inifile', 'datadir', 'default']
+        })
         self._data['ilias.ini.php'] = d
         return d
 
+    def parse_client_ini(self, file_path):
+        d = parse_ini_to_dict(file_path, {
+            "client": ['name', 'access'],
+            "db": ['type', 'host', 'user', 'name', 'pass', 'port'],
+            'language': ['default'],
+            'layout': ['skin', 'style']
+        })
+        self._data['client.ini.php'] = d
+        return d
 
 
 class GitHelper:
