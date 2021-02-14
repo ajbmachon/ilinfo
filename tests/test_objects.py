@@ -3,7 +3,7 @@ import pytest as pt
 
 from os import path as osp
 from ilinfo import IliasFileParser, GitHelper
-from tests.fixtures import ilias_ini_path, client_ini_path
+from tests.fixtures import ilias_ini_path, client_ini_path, plugin_php_path
 
 
 class TestGitHelper:
@@ -41,3 +41,8 @@ class TestIliasFileParser:
                             'server': {}, 'session': {},
                             'source_file': client_ini_path,
                             'system': {}}
+
+    def test_parse_plugin_php(self, plugin_php_path):
+        plugin_info_dict = self.file_parser.parse_plugin_php(plugin_php_path)
+        assert plugin_info_dict == {'source_file': plugin_php_path, 'ilias_max_version': '5.4.999',
+                                    'ilias_min_version': '5.3.0', 'responsible': 'Andre Machon', 'version': '1.1.0'}

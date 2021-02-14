@@ -11,3 +11,7 @@ def ilias_ini_path():
 @pt.fixture
 def client_ini_path():
     return osp.join(FIXTURE_FILES_DIR, 'client.ini.php')
+
+@pt.fixture
+def plugin_php_path():
+    return osp.join(FIXTURE_FILES_DIR, 'plugin.php')
