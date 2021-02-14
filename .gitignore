@@ -1,0 +1,13 @@
+.idea
+venv
+
+# Ignore test coverage, build, dist etc.
+.cache
+.coverage
+*.egg-info
+build
+dist
+*.pyc
+# Ignore programaticallly created files
+.iliasinfo.json
+*.log
