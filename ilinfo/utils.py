@@ -65,52 +65,38 @@ def find_files_recursive(startpath, filename, excluded_dirs=None):
             yield osp.join(current_path, filename)
 
 
-def parse_ini_file(file_name, parse_config={}, **kwargs):
-    """Parse given ini file to dictionary
+def parse_ini_to_dict(file_path, parse_config=None):
+    """Parse ini file to dictionary
 
-    :param file_name: Full path to file
-    :type file_name: str
-    :param parse_config: configuration specifying which fields to read from which section
+    :param file_path: path to ini file
+    :type file_path: str
+    :param parse_config: sections and options to include in result dict
     :type parse_config: dict
-
-    :return: Entries from given .ini file
+    :return: dict
     :rtype: dict
-
-    Example parse_config: {"db": ["user", "pass", "host", "port"], "Log": True}
-    Here we can specify a list of options to return from the section, or true to return all options.
-    If no mapping is passed or dict is empty, all values will be returned
     """
 
-    config = configparser.ConfigParser()
-    config.read(file_name)
-    file_data = {"source_file": file_name}
-    get_option_dict = lambda s, f: (s, {f: config.get(s, f, fallback='').strip('"')})
-    if not parse_config:
-        # get all options for each section and loop over them
-        for section, d in [get_option_dict(section, option) for section in config.sections()
-                           for option in config.options(section)]:
-            if file_data.get(section, False):
-                file_data[section].update(d)
+    if not file_path:
+        return
+    if parse_config is not None:
+        if not isinstance(parse_config, dict):
+            raise TypeError("parse_config needs to be a dictionary")
+
+    parser = configparser.ConfigParser()
+    parser.read(file_path)
+    data = {"source_file": file_path}
+
+    for section in parser.sections():
+        new_section = {}
+
+        for option in parser.options(section):
+            if parse_config:
+                if section in parse_config and option in parse_config.get(section):
+                    new_section[option] = parser.get(section, option).strip('"')
             else:
-                file_data[section] = d
-    else:
-        for section_key, fields in parse_config.items():
-            # if True was passed for a section, we get all the options
-            if type(fields) is bool and fields is True:
-                for option in config.options(section_key):
-                    section_key, d = get_option_dict(section_key, option)
-                    if file_data.get(section_key, False):
-                        file_data[section_key].update(d)
-                    else:
-                        file_data[section_key] = d
-            # otherwise, we just get the options specified for each section
-            for field in fields:
-                section, d = (get_option_dict(section_key, field))
-                if file_data.get(section, False):
-                    file_data[section].update(d)
-                else:
-                    file_data[section] = d
-    return file_data
+                new_section[option] = parser.get(section, option).strip('"')
 
+        data[section] = new_section
 
+    return data
 
