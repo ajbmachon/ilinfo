@@ -3,7 +3,12 @@ import pytest as pt
 
 from os import path as osp
 from ilinfo import IliasFileParser, GitHelper
-from tests.fixtures import ilias_ini_path, client_ini_path, plugin_php_path
+from tests.fixtures import \
+    ilias_ini_path, \
+    client_ini_path, \
+    plugin_php_path, \
+    inc_ilias_version_php_path, \
+    gitmodules_path
 
 
 class TestGitHelper:
@@ -46,3 +51,24 @@ class TestIliasFileParser:
         plugin_info_dict = self.file_parser.parse_plugin_php(plugin_php_path)
         assert plugin_info_dict == {'source_file': plugin_php_path, 'ilias_max_version': '5.4.999',
                                     'ilias_min_version': '5.3.0', 'responsible': 'Andre Machon', 'version': '1.1.0'}
+
+    def test_parse_ilias_version(self, inc_ilias_version_php_path):
+        version = self.file_parser.parse_version(inc_ilias_version_php_path)
+        assert version == '6.6'
+
+    def test_parse_gitmodules(self, gitmodules_path):
+        submodule_dict = self.file_parser.parse_gitmodules(gitmodules_path)
+        assert submodule_dict == {
+            'DBASManager': {
+                'path': 'Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/DBASManager',
+                'url': '../../../iliasaddons/DBASManager.git', 'branch': 'Release_7.0'},
+            'LearnerGuidance': {
+                'path': 'Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/LearnerGuidance',
+                'url': '../../../iliasaddons/LearnerGuidance.git', 'branch': 'Release_7.0'},
+            'CountryLicenseTypes': {
+                'path': 'Customizing/global/plugins/Services/Cron/CronHook/CountryLicenseTypes',
+                'url': '../plugins/CountryLicenseTypes.git', 'branch': 'r6'},
+            'LPOverview': {
+                'path': 'Customizing/global/plugins/Services/COPage/PageComponent/LPOverview',
+                'url': '../../../iliasplugins/LPOverview.git', 'branch': 'r6'}
+        }

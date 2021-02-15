@@ -15,3 +15,11 @@ def client_ini_path():
 @pt.fixture
 def plugin_php_path():
     return osp.join(FIXTURE_FILES_DIR, 'plugin.php')
+
+@pt.fixture
+def inc_ilias_version_php_path():
+    return osp.join(FIXTURE_FILES_DIR, 'inc.ilias_version.php')
+
+@pt.fixture
+def gitmodules_path():
+    return osp.join(FIXTURE_FILES_DIR, '.gitmodules')

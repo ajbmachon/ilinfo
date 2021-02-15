@@ -10,7 +10,7 @@ __all__ = ['IliasFileParser', 'GitHelper']
 class IliasFileParser:
     """Parses ILIAS files into dictionaries
 
-    PARSED FILES:
+    PARSEABLE FILES:
         ilias.ini.php
         client.ini.php
         inc.ilias_version.php
@@ -54,6 +54,37 @@ class IliasFileParser:
                     d[result_define.groups()[0]] = result_define.groups()[1]
 
         self._data['plugin.php'] = d
+        return d
+
+    def parse_version(self, file_path):
+        """Returns the ILIAS version from file
+
+        :param file_path: path to an inc.ilias_version.php file
+        :return: version
+        :rtype: str
+        """
+
+        version = re.search(r"\"(\d\.[\d\.?]+)\"", open(file_path).read()).groups()[0]
+        self._data['ilias-version']: version
+        return version
+
+    def parse_gitmodules(self, file_path):
+        d = {}
+        with open(file_path, 'r') as gitmodules:
+            text = gitmodules.read()
+            names = re.findall(r"\[submodule\s\"(\w+)\"]", text)
+            path_groups = re.findall(r"(path)\s=\s([\w+/]+)", text)
+            url_groups = re.findall(r"(url)\s=\s([./]+[\w/.]+)", text)
+            branch_groups = re.findall(r"(branch)\s=\s([\w /.]+)", text)
+
+            for i in range(len(names)):
+                d[names[i]] = {
+                    path_groups[i][0]: path_groups[i][1],
+                    url_groups[i][0]: url_groups[i][1],
+                    branch_groups[i][0]: branch_groups[i][1]
+                }
+        self._data['submodules'] = d
+        print(d)
         return d
 
 

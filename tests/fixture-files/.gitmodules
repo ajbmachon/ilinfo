@@ -6,110 +6,6 @@
 	path = Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/LearnerGuidance
 	url = ../../../iliasaddons/LearnerGuidance.git
 	branch = Release_7.0
-[submodule "LearnerGuidanceCron"]
-	path = Customizing/global/plugins/Services/Cron/CronHook/LearnerGuidanceCron
-	url = ../../../iliasaddons/LearnerGuidanceCron.git
-	branch = Release_7.0
-[submodule "MailAdministration"]
-	path = Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/MailAdministration
-	url = ../../../iliasaddons/mailadministration.git
-	branch = Release_7.0
-[submodule "OrgUnits"]
-	path = Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/OrgUnits
-	url = ../../../iliasaddons/orgunits.git
-	branch = Release_7.0
-[submodule "ReportingFoundation"]
-	path = Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/ReportingFoundation
-	url = ../../../iliasaddons/ReportingFoundation.git
-	branch = Release_7.0
-[submodule "CourseList"]
-	path = Customizing/global/plugins/Services/COPage/PageComponent/CourseList
-	url = ../../../iliasplugins/courselist.git
-	branch = r6
-[submodule "ClaimingSeminar"]
-	path = Customizing/global/plugins/Services/AdvancedMetaData/AdvancedMDClaiming/ClaimingSeminar
-	url = ../../seminarverwaltung/plugins/ClaimingSeminar.git
-	branch = r6
-[submodule "CourseUserFieldPresets"]
-	path = Customizing/global/plugins/Services/EventHandling/EventHook/CourseUserFieldPresets
-	url = ../../seminarverwaltung/plugins/CourseUserFieldPresets.git
-	branch = r6
-[submodule "CourseTemplates"]
-	path = Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/CourseTemplates
-	url = ../../../iliasplugins/CourseTemplates.git
-	branch = r6
-[submodule "ExportLearningProgress"]
-	path = Customizing/global/plugins/Services/Cron/CronHook/ExportLearningProgress
-	url = ../../../iliasplugins/exportlearningprogress.git
-	branch = r6
-[submodule "GenericInterfaceLogOverview"]
-	path = Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/GenericInterfaceLogOverview
-	url = ../../../iliasplugins/genericinterfacelogoverview.git
-	branch = r6
-[submodule "CourseSearch"]
-	path = Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/CourseSearch
-	url = ../../../iliasplugins/coursesearch.git
-	branch = r6
-[submodule "CourseBooking"]
-	path = Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/CourseBooking
-	url = ../../seminarverwaltung/plugins/CourseBooking.git
-	branch = r6
-[submodule "UserTakeOver"]
-	path = Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/UserTakeOver
-	url = ../../../iliasplugins/UserTakeOver.git
-	branch = r6
-[submodule "MultiCrsAdmin"]
-	path = Customizing/global/plugins/Services/Cron/CronHook/MultiCrsAdmin
-	url = ../../../iliasplugins/MultiCrsAdmin.git
-	branch = r6
-[submodule "BusinessMainMenu"]
-	path = Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/BusinessMainMenu
-	url = ../../../iliasplugins/BusinessMainMenu.git
-	branch = r6
-[submodule "OnSiteCourseReference"]
-	path = Customizing/global/plugins/Services/Repository/RepositoryObject/OnSiteCourseReference
-	url = ../../../iliasplugins/OnSiteCourseReference.git
-        branch = r6
-[submodule "BusinessDashboard"]
-	path = Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/BusinessDashboard
-	url = ../../../iliasplugins/businessdashboard/BusinessDashboard.git
-        branch = master
-[submodule "OrgunitSync"]
-	path = Customizing/global/plugins/Services/Cron/CronHook/OrgunitSync
-	url = ../../../iliasplugins/OrgunitSync.git
-        branch = master
-[submodule "IGOR"]
-	path = Customizing/global/plugins/Services/Cron/CronHook/IGOR
-	url = ../../../iliasplugins/igor/IGOR.git
-        branch = master
-[submodule "SeminarReports"]
-	path = Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/SeminarReports
-	url = ../../seminarverwaltung/plugins/SeminarReports.git
-	branch = r6
-[submodule "QStdReports"]
-	path = Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/QStdReports
-	url = ../../../iliasplugins/QStdReports.git
-	branch = master
-[submodule "OVBUserOUCsvImportDE"]
-	path = Customizing/global/plugins/Services/Cron/CronHook/OVBUserOUCsvImportDE
-	url = ../plugins/OVBUserOUCsvImportDE.git
-	branch = r6
-[submodule "MajorEvents"]
-	path = Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/MajorEvents
-	url = ../../../iliasplugins/MajorEvents.git
-	branch = r6
-[submodule "MajorEventsMailCron"]
-	path = Customizing/global/plugins/Services/Cron/CronHook/MajorEventsMailCron
-	url = ../../../iliasplugins/MajorEventsMailCron.git
-	branch = r6
-[submodule "DecentralUserAdmin"]
-	path = Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/DecentralUserAdmin
-	url = ../../../iliasaddons/DecentralUserAdmin.git
-	branch = master
-[submodule "ClaimingEduHours"]
-	path = Customizing/global/plugins/Services/AdvancedMetaData/AdvancedMDClaiming/ClaimingEduHours
-	url = ../plugins/ClaimingEduHours.git
-	branch = r6
 [submodule "CountryLicenseTypes"]
 	path = Customizing/global/plugins/Services/Cron/CronHook/CountryLicenseTypes
 	url = ../plugins/CountryLicenseTypes.git
@@ -118,3 +14,5 @@
 	path = Customizing/global/plugins/Services/COPage/PageComponent/LPOverview
 	url = ../../../iliasplugins/LPOverview.git
 	branch = r6
+
+
