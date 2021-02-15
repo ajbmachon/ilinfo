@@ -23,3 +23,4 @@ def inc_ilias_version_php_path():
 @pt.fixture
 def gitmodules_path():
     return osp.join(FIXTURE_FILES_DIR, '.gitmodules')
+

@@ -1,4 +1,6 @@
 # Created by Andre Machon 14/02/2021
+import subprocess
+
 import pytest as pt
 
 from os import path as osp
@@ -9,14 +11,6 @@ from tests.fixtures import \
     plugin_php_path, \
     inc_ilias_version_php_path, \
     gitmodules_path
-
-
-class TestGitHelper:
-    def setup(self):
-        self.git_helper = GitHelper()
-
-    def test_init(self):
-        assert self.git_helper
 
 
 class TestIliasFileParser:
@@ -72,3 +66,49 @@ class TestIliasFileParser:
                 'path': 'Customizing/global/plugins/Services/COPage/PageComponent/LPOverview',
                 'url': '../../../iliasplugins/LPOverview.git', 'branch': 'r6'}
         }
+
+
+class TestGitHelper:
+    def setup(self):
+        self.git_helper = GitHelper()
+
+    def test_init(self):
+        assert self.git_helper
+
+    def test_parse_git_remotes(self, tmp_path):
+        repo_path = self._set_up_git_plugin_repo(tmp_path)
+        remotes = self.git_helper.parse_git_remotes(repo_path)
+        assert remotes == {'alternate': 'https://github.com/Amstutz/ILIAS.git/ILIAS-eLearning/ILIAS.git', 'origin': 'https://github.com/ILIAS-eLearning/ILIAS.git'}
+
+    def _set_up_git_plugin_repo(self, path):
+        repo_path = path / "plugin_repo"
+        repo_path.mkdir()
+        f = repo_path / "temp.txt"
+        f.write_text("TEST")
+        res = self._create_git_repo(repo_path)
+        return repo_path
+
+    def _create_git_repo(self, path):
+        if "run" in dir(subprocess):
+            subprocess.run(['git', 'init'], cwd=path, stdout=subprocess.PIPE)
+            subprocess.run(['git', 'add', '.'], cwd=path, stdout=subprocess.PIPE)
+            cp = subprocess.run(['git', 'commit', '-m', 'Initial Commit'], cwd=path, stdout=subprocess.PIPE)
+            subprocess.run(['git', 'remote', 'add', 'origin', 'https://github.com/ILIAS-eLearning/ILIAS.git'], cwd=path,
+                           stdout=subprocess.PIPE)
+            subprocess.run(
+                ['git', 'remote', 'add', 'alternate', 'https://github.com/Amstutz/ILIAS.git/ILIAS-eLearning/ILIAS.git'],
+                cwd=path,
+                stdout=subprocess.PIPE
+            )
+            return cp.stdout.decode('utf8')
+        else:
+            subprocess.check_output(['git', 'remote', '-v'], cwd=path)
+            subprocess.check_output(['git', 'add', '.'], cwd=path)
+            cp = subprocess.check_output(['git', 'commit', '-m', 'Initial Commit'], cwd=path)
+            subprocess.check_output(['git', 'remote', 'add', 'origin', 'https://github.com/ILIAS-eLearning/ILIAS.git'],
+                                    cwd=path)
+            subprocess.check_output(
+                ['git', 'remote', 'add', 'alternate', 'https://github.com/Amstutz/ILIAS.git/ILIAS-eLearning/ILIAS.git'],
+                cwd=path
+            )
+            return str(cp, 'utf-8')

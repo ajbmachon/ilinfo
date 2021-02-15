@@ -1,6 +1,7 @@
 # Created by Andre Machon 14/02/2021
 import configparser
 import re
+import subprocess
 
 from ilinfo.utils import parse_ini_to_dict
 
@@ -120,4 +121,28 @@ class IliasFileParser:
 
 
 class GitHelper:
-    pass
+
+    def __init__(self):
+        self._data = {}
+
+    def parse_git_remotes(self, repo_path):
+        try:
+            if "run" in dir(subprocess):
+                # CalledProcessError
+                cp = subprocess.run(['git', 'remote', '-v'], cwd=repo_path, stdout=subprocess.PIPE)
+                return self._format_git_remote_to_dict(cp.stdout.decode('utf8'))
+            else:
+                cp = subprocess.check_output(['git', 'remote', '-v'], cwd=repo_path)
+                return self._format_git_remote_to_dict(str(cp, 'utf-8'))
+        except subprocess.CalledProcessError as err:
+            print(err)
+            return ""
+
+    def _format_git_remote_to_dict(self, remote_str):
+        remote_dict = {}
+        lines = remote_str.splitlines()
+        formatted_lines = [tuple(l.split(' ')[0].split('\t')) for l in lines]
+
+        for line in formatted_lines:
+            remote_dict.update({line[0]: line[1]})
+        return remote_dict
