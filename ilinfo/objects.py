@@ -10,7 +10,7 @@ __all__ = ['IliasFileParser', 'GitHelper']
 class IliasFileParser:
     """Parses ILIAS files into dictionaries
 
-    PARSEABLE FILES:
+    PARSABLE FILES:
         ilias.ini.php
         client.ini.php
         inc.ilias_version.php
@@ -22,6 +22,13 @@ class IliasFileParser:
         self._data = {}
 
     def parse_ilias_ini(self, file_path):
+        """Parses ilias.ini.php file for information about ILIAS installation
+
+        :param file_path: path to ilias.ini.php file
+        :type file_path: str
+        :return: dict with client and path information
+        :rtype: dict
+        """
         d = parse_ini_to_dict(file_path, {
             "server": ['http_path', 'absolute_path'],
             "clients": ['path', 'inifile', 'datadir', 'default']
@@ -30,6 +37,13 @@ class IliasFileParser:
         return d
 
     def parse_client_ini(self, file_path):
+        """Parses client.ini.php file for information about skins, language and db connections
+
+        :param file_path: path to client.ini.php file
+        :type file_path: str
+        :return: dict with db connection and further client specific information
+        :rtype: dict
+        """
         d = parse_ini_to_dict(file_path, {
             "client": ['name', 'access'],
             "db": ['type', 'host', 'user', 'name', 'pass', 'port'],
@@ -40,6 +54,15 @@ class IliasFileParser:
         return d
 
     def parse_plugin_php(self, file_path, encoding='utf-8'):
+        """Returns plugin information
+
+        :param file_path: path to plugin.php file
+        :type file_path: str
+        :param encoding: encoding of file
+        :type encoding: str
+        :return: dict with plugin version, compatible ILIAS versions and author information
+        :rtype: dict
+        """
         d = {"source_file": file_path}
 
         with open(file_path, encoding=encoding) as plugin_php:
@@ -69,9 +92,17 @@ class IliasFileParser:
         return version
 
     def parse_gitmodules(self, file_path):
+        """Parses .gitmodules file and returns information for each submodule there
+
+        :param file_path: path to .gitmodules file
+        :type file_path: str
+        :return: {'submodule_name': {'path': '/path/to/submodule', 'url': 'git_project_url', 'branch': 'branch_name'}}
+        :rtype: dict
+        """
         d = {}
         with open(file_path, 'r') as gitmodules:
             text = gitmodules.read()
+
             names = re.findall(r"\[submodule\s\"(\w+)\"]", text)
             path_groups = re.findall(r"(path)\s=\s([\w+/]+)", text)
             url_groups = re.findall(r"(url)\s=\s([./]+[\w/.]+)", text)
@@ -83,8 +114,8 @@ class IliasFileParser:
                     url_groups[i][0]: url_groups[i][1],
                     branch_groups[i][0]: branch_groups[i][1]
                 }
+
         self._data['submodules'] = d
-        print(d)
         return d
 
 
