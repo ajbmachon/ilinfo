@@ -9,6 +9,28 @@ from ilinfo.utils import parse_ini_to_dict, find_files_recursive
 __all__ = ['IliasFileParser', 'IliasPathFinder', 'GitHelper']
 
 
+# class IliasAnalyzer:
+#     """Aggregates the IliasFileParser, IliasPathFinder and GitHelper to analyze the systems ILIAS installations"""
+#
+#     def __init__(self, fileparser=None, pathfinder=None, git_helper=None, output_processor=None):
+#         self._data = {}
+#
+#         self._file_parser
+#
+#     def _check_init_params(self, fileparser=None, pathfinder=None, git_helper=None, output_processor=None):
+#         if fileparser is not None:
+#             if not isinstance(fileparser, IliasFileParser):
+#                 raise TypeError('Param fileparser needs to be of type IliasFileParser, or None')
+#         if pathfinder is not None:
+#             if not isinstance(pathfinder, IliasPathFinder):
+#                 raise TypeError('Param pathfinder needs to be of type IliasPathFinder, or None')
+#         if git_helper is not None:
+#             if not isinstance(git_helper, GitHelper):
+#                 raise TypeError('Param git_helper needs to be of type GitHelper, or None')
+#         if output_processor is not None:
+#             pass
+
+
 class IliasFileParser:
     """Parses ILIAS files into dictionaries
 
@@ -21,9 +43,13 @@ class IliasFileParser:
     """
 
     def __init__(self):
-        self._data = {}
+        self._data = {
+            'client.ini.php': [],
+            'plugin.php': []
+        }
+        self._git_helper = GitHelper()
 
-    __slots__ = '_data'
+    __slots__ = ['_data', '_git_helper']
 
     @property
     def data(self):
@@ -58,8 +84,15 @@ class IliasFileParser:
             'language': ['default'],
             'layout': ['skin', 'style']
         })
-        self._data['client.ini.php'] = d
+        self._data['client.ini.php'].append(d)
         return d
+
+    def parse_plugin(self, file_path, encoding='utf-8'):
+        plugin_php_dict = self.parse_plugin_php(file_path, encoding)
+        plugin_php_dict['remotes'] = self._git_helper.parse_git_remotes(osp.dirname(file_path))
+        # replace last entry in plugin.php list with our extended version
+        self._data['plugin.php'][-1:] = plugin_php_dict
+        return plugin_php_dict
 
     def parse_plugin_php(self, file_path, encoding='utf-8'):
         """Returns plugin information
@@ -84,7 +117,7 @@ class IliasFileParser:
                 if result_define:
                     d[result_define.groups()[0]] = result_define.groups()[1]
 
-        self._data['plugin.php'] = d
+        self._data['plugin.php'].append(d)
         return d
 
     def parse_version(self, file_path):

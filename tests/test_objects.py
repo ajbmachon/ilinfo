@@ -10,7 +10,8 @@ from tests.fixtures import \
     client_ini_path, \
     plugin_php_path, \
     inc_ilias_version_php_path, \
-    gitmodules_path
+    gitmodules_path, \
+    set_up_git_plugin_repo
 
 
 class TestIliasFileParser:
@@ -40,6 +41,16 @@ class TestIliasFileParser:
                             'server': {}, 'session': {},
                             'source_file': client_ini_path,
                             'system': {}}
+
+    def test_parse_plugin(self, set_up_git_plugin_repo):
+        source_file = osp.join(str(set_up_git_plugin_repo), 'plugin.php')
+        plugin_info_dict = self.file_parser.parse_plugin(source_file)
+        assert plugin_info_dict == {'source_file': source_file, 'ilias_max_version': '5.4.999',
+                                    'ilias_min_version': '5.3.0', 'responsible': 'Andre Machon', 'version': '1.1.0',
+                                    'remotes': {
+                                        'alternate': 'https://github.com/Amstutz/ILIAS.git/ILIAS-eLearning/ILIAS.git',
+                                        'origin': 'https://github.com/ILIAS-eLearning/ILIAS.git'
+                                    }}
 
     def test_parse_plugin_php(self, plugin_php_path):
         plugin_info_dict = self.file_parser.parse_plugin_php(plugin_php_path)
@@ -98,7 +109,6 @@ class TestIliasPathFinder:
         assert next(plugin_path_itr) == str(plugin_path_1)
         assert next(plugin_path_itr) == str(plugin_path_2)
 
-
     def _create_fake_ilias_in_filesystem(self, path):
         path.mkdir(parents=True)
         p2 = path / 'include'
@@ -136,40 +146,9 @@ class TestGitHelper:
     def test_init(self):
         assert self.git_helper
 
-    def test_parse_git_remotes(self, tmp_path):
-        repo_path = self._set_up_git_plugin_repo(tmp_path)
-        remotes = self.git_helper.parse_git_remotes(repo_path)
-        assert remotes == {'alternate': 'https://github.com/Amstutz/ILIAS.git/ILIAS-eLearning/ILIAS.git', 'origin': 'https://github.com/ILIAS-eLearning/ILIAS.git'}
+    def test_parse_git_remotes(self, set_up_git_plugin_repo):
+        remotes = self.git_helper.parse_git_remotes(set_up_git_plugin_repo)
+        assert remotes == {'alternate': 'https://github.com/Amstutz/ILIAS.git/ILIAS-eLearning/ILIAS.git',
+                           'origin': 'https://github.com/ILIAS-eLearning/ILIAS.git'}
 
-    def _set_up_git_plugin_repo(self, path):
-        repo_path = path / "plugin_repo"
-        repo_path.mkdir()
-        f = repo_path / "temp.txt"
-        f.write_text("TEST")
-        self._create_git_repo(repo_path)
-        return repo_path
 
-    def _create_git_repo(self, path):
-        if "run" in dir(subprocess):
-            subprocess.run(['git', 'init'], cwd=path, stdout=subprocess.PIPE)
-            subprocess.run(['git', 'add', '.'], cwd=path, stdout=subprocess.PIPE)
-            cp = subprocess.run(['git', 'commit', '-m', 'Initial Commit'], cwd=path, stdout=subprocess.PIPE)
-            subprocess.run(['git', 'remote', 'add', 'origin', 'https://github.com/ILIAS-eLearning/ILIAS.git'], cwd=path,
-                           stdout=subprocess.PIPE)
-            subprocess.run(
-                ['git', 'remote', 'add', 'alternate', 'https://github.com/Amstutz/ILIAS.git/ILIAS-eLearning/ILIAS.git'],
-                cwd=path,
-                stdout=subprocess.PIPE
-            )
-            return cp.stdout.decode('utf8')
-        else:
-            subprocess.check_output(['git', 'remote', '-v'], cwd=path)
-            subprocess.check_output(['git', 'add', '.'], cwd=path)
-            cp = subprocess.check_output(['git', 'commit', '-m', 'Initial Commit'], cwd=path)
-            subprocess.check_output(['git', 'remote', 'add', 'origin', 'https://github.com/ILIAS-eLearning/ILIAS.git'],
-                                    cwd=path)
-            subprocess.check_output(
-                ['git', 'remote', 'add', 'alternate', 'https://github.com/Amstutz/ILIAS.git/ILIAS-eLearning/ILIAS.git'],
-                cwd=path
-            )
-            return str(cp, 'utf-8')
