@@ -1,11 +1,12 @@
 # Created by Andre Machon 14/02/2021
-import configparser
 import re
 import subprocess
+from os import path as osp
+from copy import deepcopy
 
-from ilinfo.utils import parse_ini_to_dict
+from ilinfo.utils import parse_ini_to_dict, find_files_recursive
 
-__all__ = ['IliasFileParser', 'GitHelper']
+__all__ = ['IliasFileParser', 'IliasPathFinder', 'GitHelper']
 
 
 class IliasFileParser:
@@ -21,6 +22,12 @@ class IliasFileParser:
 
     def __init__(self):
         self._data = {}
+
+    __slots__ = '_data'
+
+    @property
+    def data(self):
+        return deepcopy(self._data)
 
     def parse_ilias_ini(self, file_path):
         """Parses ilias.ini.php file for information about ILIAS installation
@@ -120,10 +127,95 @@ class IliasFileParser:
         return d
 
 
+class IliasPathFinder:
+
+    def __init__(self, excluded_folders=None):
+        """
+        :param excluded_folders: list of folders to skip
+        :type excluded_folders: list
+        """
+        self._ilias_paths = {}
+        self._excluded = excluded_folders or []
+
+    __slots__ = ('_ilias_paths', '_excluded')
+
+    @property
+    def ilias_paths(self):
+        return deepcopy(self._ilias_paths)
+
+    def find_installations(self, start_path, excluded_folders=None):
+        """Recursively searches a path for all ILIAS installations
+
+        Any path containing a value that is in self.exclude_dirs, is skipped. This happens to account for backups,
+        Skip irrelevant paths to speed up execution and enable us to customize which installations should be skipped
+
+        :param start_path: path to start searching from. In most cases "/" is the best option
+        :type start_path: str
+        :param excluded_folders: list of folders to skip while searching
+        :type excluded_folders: list
+        :return: yields full path to each found ILIAS installation
+        :rtype: str
+        """
+
+        # TODO could add behaviour to only find active installations based on the presence of ilias.ini.php
+        excluded_dirs = self._extend_excluded_folders(excluded_folders)
+        excluded_dirs.append('Customizing/global')
+
+        for file in find_files_recursive(start_path, 'ilias.php', excluded_dirs):
+            ilias_path = osp.dirname(file)
+            if ilias_path not in self._ilias_paths:
+                self._ilias_paths[ilias_path] = {'plugins': {}, 'files': self._find_analyzable_files(ilias_path)}
+            yield ilias_path
+
+    def find_plugins(self, start_path, excluded_folders=None):
+        """Recursively searches a path for all ILIAS plugins
+
+        :param start_path: path to start searching from. In most cases "/" is the best option
+        :type start_path: str
+        :param excluded_folders: list of folders to skip while searching
+        :type excluded_folders: list
+        :return: yields full path to each found ILIAS installation
+        :rtype: str
+        """
+        excluded_dirs = self._extend_excluded_folders(excluded_folders)
+
+        for file in find_files_recursive(start_path, 'plugin.php', excluded_dirs):
+            plugin_path = osp.dirname(file)
+            for path, d in self._ilias_paths:
+                if path in plugin_path:
+                    d['plugins'][osp.basename(plugin_path)] = file
+
+            yield plugin_path
+
+    def _find_analyzable_files(self, ilias_path):
+        d = {
+            '.gitmodules': osp.join(ilias_path, '.gitmodules'),
+            'ilias.ini.php': osp.join(ilias_path, 'ilias.ini.php'),
+            'inc.ilias_version.php': osp.join(ilias_path, 'include', 'inc.ilias.version.php'),
+            'client.ini.php': []
+        }
+
+        for client_ini in find_files_recursive(ilias_path, 'client.ini.php'):
+            d['client.ini.php'].append(client_ini)
+        return d
+
+    def _extend_excluded_folders(self, excluded_folders):
+        excluded_dirs = deepcopy(self._excluded)
+        if excluded_folders and isinstance(excluded_folders, list):
+            excluded_dirs.extend(excluded_folders)
+        return excluded_dirs
+
+
 class GitHelper:
 
     def __init__(self):
         self._data = {}
+
+    __slots__ = '_data'
+
+    @property
+    def data(self):
+        return deepcopy(self._data)
 
     def parse_git_remotes(self, repo_path):
         try:

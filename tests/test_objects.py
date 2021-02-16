@@ -4,7 +4,7 @@ import subprocess
 import pytest as pt
 
 from os import path as osp
-from ilinfo import IliasFileParser, GitHelper
+from ilinfo import IliasFileParser, IliasPathFinder, GitHelper
 from tests.fixtures import \
     ilias_ini_path, \
     client_ini_path, \
@@ -68,6 +68,67 @@ class TestIliasFileParser:
         }
 
 
+class TestIliasPathFinder:
+    # TODO expand tests to verify skipping of excluded folders!
+    def setup(self):
+        self.pathfinder = IliasPathFinder()
+
+    def test_init(self):
+        assert self.pathfinder
+
+    def test_find_installations(self, tmp_path):
+        ilias_path_1 = self._create_fake_ilias_in_filesystem(tmp_path / 'ILIAS_1')
+        ilias_path_2 = self._create_fake_ilias_in_filesystem(tmp_path / 'ILIAS_2')
+
+        ilias_paths_itr = self.pathfinder.find_installations(tmp_path)
+        assert next(ilias_paths_itr) == str(ilias_path_1)
+        assert next(ilias_paths_itr) == str(ilias_path_2)
+
+        files = self.pathfinder.ilias_paths[str(ilias_path_1)]['files']
+        assert '.gitmodules' in files
+        assert 'ilias.ini.php' in files
+        assert 'inc.ilias_version.php' in files
+        assert 'client.ini.php' in files
+
+    def test_find_plugins(self, tmp_path):
+        plugin_path_1 = self._create_fake_plugin_in_filesystem(tmp_path / 'ILIAS_1')
+        plugin_path_2 = self._create_fake_plugin_in_filesystem(tmp_path / 'ILIAS_2')
+
+        plugin_path_itr = self.pathfinder.find_plugins(tmp_path)
+        assert next(plugin_path_itr) == str(plugin_path_1)
+        assert next(plugin_path_itr) == str(plugin_path_2)
+
+
+    def _create_fake_ilias_in_filesystem(self, path):
+        path.mkdir(parents=True)
+        p2 = path / 'include'
+        p2.mkdir(parents=True)
+        p3 = path / 'data/example_client'
+        p3.mkdir(parents=True)
+
+        f = path / "ilias.php"
+        f.touch()
+
+        f = path / ".gitmodules"
+        f.touch()
+
+        f = p2 / "inc.ilias_version.php"
+        f.touch()
+
+        f = p3 / "client.ini.php"
+        f.touch()
+
+        return path
+
+    def _create_fake_plugin_in_filesystem(self, path):
+        ilias_path = self._create_fake_ilias_in_filesystem(path)
+        plugin_path = ilias_path / 'Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/UserTakeOver'
+        plugin_path.mkdir(exist_ok=True, parents=True)
+        f = plugin_path / "plugin.php"
+        f.touch()
+        return plugin_path
+
+
 class TestGitHelper:
     def setup(self):
         self.git_helper = GitHelper()
@@ -85,7 +146,7 @@ class TestGitHelper:
         repo_path.mkdir()
         f = repo_path / "temp.txt"
         f.write_text("TEST")
-        res = self._create_git_repo(repo_path)
+        self._create_git_repo(repo_path)
         return repo_path
 
     def _create_git_repo(self, path):

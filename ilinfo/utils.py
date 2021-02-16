@@ -30,7 +30,7 @@ def read_client_db_login(file_name):
     :type file_name: str
     :return: connection dict
     """
-    result = parse_ini_file(file_name, parse_config={"db": ["user", "pass", "host", "name", "port"]})
+    result = parse_ini_to_dict(file_name, parse_config={"db": ["user", "pass", "host", "name", "port"]})
     con_dict = result.get('db', {'user': '', 'pass': '', 'host': '', 'name': '', "port": ''})
     con_dict['password'] = con_dict.pop('pass')
     con_dict['database'] = con_dict.pop('name')

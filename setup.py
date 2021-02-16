@@ -5,14 +5,14 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="ilinfo-ajbmachon",
-    version="0.0.1",
+    version="0.1.0",
     author="Andre Machon",
     author_email="ajbmachon2@gmail.com",
     license='GNU GPLv3',
     description="Package for analyzing ILIAS installations",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="",
+    url="https://github.com/ajbmachon/ilinfo",
     packages=setuptools.find_packages(exclude=['tests*']),
     classifiers=[
         "Programming Language :: Python :: 3",
