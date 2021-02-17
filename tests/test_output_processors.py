@@ -12,7 +12,13 @@ class TestOutputProcessor:
 
 class TestJsonOutputProcessor:
     def setup(self):
-        self.json_out = JSONOutput([{}, {}])
+        out_path = '/tmp/pytest-of-amachon/ilinfo-results'
+        self.json_out = JSONOutput([{}, {}], output_path=out_path)
 
     def test_init(self):
         assert self.json_out
+        # TODO more asserts
+
+    def test_ilias_dicts(self):
+        self.json_out.ilias_dicts = {'test': 'dict'}
+        assert self.json_out.ilias_dicts == [{}, {}, {'test': 'dict'}]

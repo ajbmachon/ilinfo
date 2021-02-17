@@ -20,7 +20,7 @@ class IliasAnalyzer:
         self._file_parser = fileparser or IliasFileParser()
         self._pathfinder = pathfinder or IliasPathFinder()
         self._git_helper = git_helper or GitHelper()
-        self._output_processor = output_processor or JSONOutput() #
+        self._output_processor = output_processor or JSONOutput()
 
     def _check_init_params(self, fileparser=None, pathfinder=None, git_helper=None, output_processor=None, excluded_folders=None):
         if fileparser is not None:
