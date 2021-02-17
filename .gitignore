@@ -1,5 +1,6 @@
 .idea
 venv
+ilinfo-results
 
 # Ignore test coverage, build, dist etc.
 .cache

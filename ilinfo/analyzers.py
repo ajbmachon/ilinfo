@@ -5,30 +5,48 @@ from os import path as osp
 from copy import deepcopy
 
 from ilinfo.utils import parse_ini_to_dict, find_files_recursive
+from ilinfo.output_processors import OutputProcessor, JSONOutput
 
-__all__ = ['IliasFileParser', 'IliasPathFinder', 'GitHelper']
+__all__ = ['IliasAnalyzer', 'IliasFileParser', 'IliasPathFinder', 'GitHelper']
 
 
-# class IliasAnalyzer:
-#     """Aggregates the IliasFileParser, IliasPathFinder and GitHelper to analyze the systems ILIAS installations"""
-#
-#     def __init__(self, fileparser=None, pathfinder=None, git_helper=None, output_processor=None):
-#         self._data = {}
-#
-#         self._file_parser
-#
-#     def _check_init_params(self, fileparser=None, pathfinder=None, git_helper=None, output_processor=None):
-#         if fileparser is not None:
-#             if not isinstance(fileparser, IliasFileParser):
-#                 raise TypeError('Param fileparser needs to be of type IliasFileParser, or None')
-#         if pathfinder is not None:
-#             if not isinstance(pathfinder, IliasPathFinder):
-#                 raise TypeError('Param pathfinder needs to be of type IliasPathFinder, or None')
-#         if git_helper is not None:
-#             if not isinstance(git_helper, GitHelper):
-#                 raise TypeError('Param git_helper needs to be of type GitHelper, or None')
-#         if output_processor is not None:
-#             pass
+class IliasAnalyzer:
+    """Aggregates the IliasFileParser, IliasPathFinder and GitHelper to analyze the systems ILIAS installations"""
+
+    def __init__(self, fileparser=None, pathfinder=None, git_helper=None, output_processor=None, excluded_folders=None):
+        self._data = {}
+        self._check_init_params(fileparser, pathfinder, git_helper, output_processor)
+
+        self._file_parser = fileparser or IliasFileParser()
+        self._pathfinder = pathfinder or IliasPathFinder()
+        self._git_helper = git_helper or GitHelper()
+        self._output_processor = output_processor or JSONOutput() #
+
+    def _check_init_params(self, fileparser=None, pathfinder=None, git_helper=None, output_processor=None, excluded_folders=None):
+        if fileparser is not None:
+            if not isinstance(fileparser, IliasFileParser):
+                raise TypeError('Param fileparser needs to be of type IliasFileParser, or None')
+        if pathfinder is not None:
+            if not isinstance(pathfinder, IliasPathFinder):
+                raise TypeError('Param pathfinder needs to be of type IliasPathFinder, or None')
+        if git_helper is not None:
+            if not isinstance(git_helper, GitHelper):
+                raise TypeError('Param git_helper needs to be of type GitHelper, or None')
+        if output_processor is not None:
+            if not issubclass(output_processor, OutputProcessor):
+                raise TypeError('Param output_processor needs to be a subclass of OutputProcessor, or None')
+        if excluded_folders is not None:
+            if not isinstance(excluded_folders, dict):
+                raise TypeError('Param excluded_folders needs to be of type dict, or None')
+
+    def analyze_path(self, start_path):
+        # analyze path recursively with iliaspathfinder
+
+
+        # for each installation found create a iliaspathfinder and parse files
+
+        # output results via output processor
+        pass
 
 
 class IliasFileParser:

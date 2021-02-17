@@ -4,7 +4,7 @@ import subprocess
 import pytest as pt
 
 from os import path as osp
-from ilinfo import IliasFileParser, IliasPathFinder, GitHelper
+from ilinfo import IliasFileParser, IliasPathFinder, GitHelper, IliasAnalyzer
 from tests.fixtures import \
     ilias_ini_path, \
     client_ini_path, \
@@ -12,6 +12,18 @@ from tests.fixtures import \
     inc_ilias_version_php_path, \
     gitmodules_path, \
     set_up_git_plugin_repo
+
+
+class TestIliasAnalyzer:
+    def setup(self):
+        self.analyzer = IliasAnalyzer()
+
+    def test_init(self):
+        assert self.analyzer
+
+        with pt.raises(TypeError):
+            IliasAnalyzer(IliasFileParser(), "", "", "", "")
+            IliasAnalyzer(1, "", GitHelper(), "")
 
 
 class TestIliasFileParser:
