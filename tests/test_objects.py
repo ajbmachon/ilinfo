@@ -1,17 +1,7 @@
 # Created by Andre Machon 14/02/2021
-import subprocess
-
 import pytest as pt
-
 from os import path as osp
 from ilinfo import IliasFileParser, IliasPathFinder, GitHelper, IliasAnalyzer
-from tests.fixtures import \
-    ilias_ini_path, \
-    client_ini_path, \
-    plugin_php_path, \
-    inc_ilias_version_php_path, \
-    gitmodules_path, \
-    set_up_git_plugin_repo
 
 
 class TestIliasAnalyzer:
@@ -32,6 +22,11 @@ class TestIliasFileParser:
 
     def test_init(self):
         assert self.file_parser
+
+    @pt.mark.sub_dir("Customer1")
+    def test_parse_from_pathfinder(self, setup_fake_ilias):
+        results = self.file_parser.parse_from_pathfinder()
+        pass
 
     def test_parse_ilias_ini(self, ilias_ini_path):
         ini_dict = self.file_parser.parse_ilias_ini(ilias_ini_path)
@@ -54,8 +49,8 @@ class TestIliasFileParser:
                             'source_file': client_ini_path,
                             'system': {}}
 
-    def test_parse_plugin(self, set_up_git_plugin_repo):
-        source_file = osp.join(str(set_up_git_plugin_repo), 'plugin.php')
+    def test_parse_plugin(self, setup_git_plugin_repo):
+        source_file = osp.join(str(setup_git_plugin_repo), 'plugin.php')
         plugin_info_dict = self.file_parser.parse_plugin(source_file)
         assert plugin_info_dict == {'source_file': source_file, 'ilias_max_version': '5.4.999',
                                     'ilias_min_version': '5.3.0', 'responsible': 'Andre Machon', 'version': '1.1.0',
@@ -114,6 +109,7 @@ class TestIliasPathFinder:
         assert 'client.ini.php' in files
 
     def test_find_plugins(self, tmp_path):
+        # TODO call setup_fake_plugin fixture twice with different path!
         plugin_path_1 = self._create_fake_plugin_in_filesystem(tmp_path / 'ILIAS_1')
         plugin_path_2 = self._create_fake_plugin_in_filesystem(tmp_path / 'ILIAS_2')
 
@@ -122,28 +118,10 @@ class TestIliasPathFinder:
         assert next(plugin_path_itr) == str(plugin_path_2)
 
     def _create_fake_ilias_in_filesystem(self, path):
-        path.mkdir(parents=True)
-        p2 = path / 'include'
-        p2.mkdir(parents=True)
-        p3 = path / 'data/example_client'
-        p3.mkdir(parents=True)
+        pass
 
-        f = path / "ilias.php"
-        f.touch()
-
-        f = path / ".gitmodules"
-        f.touch()
-
-        f = p2 / "inc.ilias_version.php"
-        f.touch()
-
-        f = p3 / "client.ini.php"
-        f.touch()
-
-        return path
-
-    def _create_fake_plugin_in_filesystem(self, path):
-        ilias_path = self._create_fake_ilias_in_filesystem(path)
+    def _create_fake_plugin_in_filesystem(self, setup_fake_ilias):
+        ilias_path = setup_fake_ilias
         plugin_path = ilias_path / 'Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/UserTakeOver'
         plugin_path.mkdir(exist_ok=True, parents=True)
         f = plugin_path / "plugin.php"
@@ -158,8 +136,8 @@ class TestGitHelper:
     def test_init(self):
         assert self.git_helper
 
-    def test_parse_git_remotes(self, set_up_git_plugin_repo):
-        remotes = self.git_helper.parse_git_remotes(set_up_git_plugin_repo)
+    def test_parse_git_remotes(self, setup_git_plugin_repo):
+        remotes = self.git_helper.parse_git_remotes(setup_git_plugin_repo)
         assert remotes == {'alternate': 'https://github.com/Amstutz/ILIAS.git/ILIAS-eLearning/ILIAS.git',
                            'origin': 'https://github.com/ILIAS-eLearning/ILIAS.git'}
 

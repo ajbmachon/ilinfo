@@ -2,7 +2,7 @@
 import pytest as pt
 
 from ilinfo.utils import parse_ini_to_dict
-from tests.fixtures import ilias_ini_path
+from tests.conftest import ilias_ini_path
 
 
 def test_ini_parsing(ilias_ini_path):
@@ -34,7 +34,7 @@ def test_ini_parsing(ilias_ini_path):
                           'htmldoc': ''},
                  'https': {'auto_https_detect_enabled': '0', 'auto_https_detect_header_name': 'X-SSL',
                            'auto_https_detect_header_value': 'On'}}
-    assert d2 == {'source_file': '/home/amachon/Projects/python/ilinfo/tests/fixture-files/ilias.ini.php',
+    assert d2 == {'source_file': ilias_ini_path,
                   'server': {'http_path': 'https://ilias.website.net', 'timezone': 'Europe/Berlin'},
                   'clients': {'path': 'data', 'inifile': 'client.ini.php'}, 'setup': {}, 'tools': {}, 'log': {},
                   'debian': {}, 'redhat': {}, 'suse': {}, 'https': {}}

@@ -21,6 +21,7 @@ class IliasAnalyzer:
         self._pathfinder = pathfinder or IliasPathFinder()
         self._git_helper = git_helper or GitHelper()
         self._output_processor = output_processor or JSONOutput()
+        self._excluded_folders = excluded_folders
 
     def _check_init_params(self, fileparser=None, pathfinder=None, git_helper=None, output_processor=None, excluded_folders=None):
         if fileparser is not None:
@@ -41,7 +42,8 @@ class IliasAnalyzer:
 
     def analyze_path(self, start_path):
         # analyze path recursively with iliaspathfinder
-
+        self._pathfinder.find_installations(start_path, self._excluded_folders)
+        self._pathfinder.find_plugins(start_path, self._excluded_folders)
 
         # for each installation found create a iliaspathfinder and parse files
 
@@ -186,7 +188,7 @@ class IliasPathFinder:
         :type excluded_folders: list
         """
         self._ilias_paths = {}
-        self._excluded = excluded_folders or []
+        self._excluded = excluded_folders or ['_Examples']
 
     __slots__ = ('_ilias_paths', '_excluded')
 
@@ -232,7 +234,7 @@ class IliasPathFinder:
 
         for file in find_files_recursive(start_path, 'plugin.php', excluded_dirs):
             plugin_path = osp.dirname(file)
-            for path, d in self._ilias_paths:
+            for path, d in self._ilias_paths.items():
                 if path in plugin_path:
                     d['plugins'][osp.basename(plugin_path)] = file
 
