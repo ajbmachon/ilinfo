@@ -45,49 +45,33 @@ def gitmodules_path():
 
 
 @pt.fixture
-def setup_fake_ilias(request, tmp_path):
-    marker = request.node.get_closest_marker("sub_dir")
-    if marker is None:
-        path = tmp_path
-    else:
-        path = tmp_path / marker.args[0]
+def setup_fake_ilias(tmp_path, ilias_ini_path, inc_ilias_version_php_path, client_ini_path, gitmodules_path):
+    def _fake_ilias(path=""):
+        ilias_path, include_path, client_data_path = _create_ilias_dirs(tmp_path / path)
+        ilias_ini_path.copy(ilias_path / 'ilias.ini.php')
+        gitmodules_path.copy(ilias_path / '.gitmodules')
+        inc_ilias_version_php_path.copy(include_path / 'inc.ilias_version.php')
+        client_ini_path.copy(client_data_path / 'client.ini.php')
+        f = ilias_path / 'ilias.php'
+        f.touch()
+        return ilias_path
 
-    ilias_path, include_path, client_data_path = _create_ilias_dirs(path)
-    _copy_analyzable_ilias_files(ilias_path, include_path, client_data_path)
-    return ilias_path
+    return _fake_ilias
 
 
 @pt.fixture
-def setup_fake_plugin(setup_fake_ilias):
-    ilias_path = setup_fake_ilias
+def setup_fake_plugin(setup_fake_ilias, plugin_php_path):
+    ilias_path = setup_fake_ilias()
     plugin_path = ilias_path / 'Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/UserTakeOver'
     plugin_path.mkdir(exist_ok=True, parents=True)
-    plugin_php_path().copy(plugin_path / "plugin.php")
+    plugin_php_path.copy(plugin_path / "plugin.php")
     return plugin_path
 
 
 @pt.fixture
-def setup_git_plugin_repo(tmp_path, plugin_php_path):
-    repo_path = tmp_path / "plugin_repo"
-    repo_path.mkdir()
-    f = repo_path / "temp.txt"
-    f.write_text("TEST")
-    plugin_php_path.copy(repo_path / 'plugin.php')
-    _create_git_repo(repo_path)
-    return repo_path
-
-
-
-def _copy_analyzable_ilias_files(ilias_path, includes_path, client_data_path):
-    """Copies ILIAS files to temp test directories
-
-    :type ilias_path: Path
-    :type includes_path: Path
-    :type client_data_path: Path
-    """
-    ilias_ini_path().copy(ilias_path / 'ilias.ini.php')
-    inc_ilias_version_php_path().copy(includes_path / 'inc.ilias_version.php')
-    client_ini_path().copy(client_data_path / 'client.ini.php')
+def setup_git_plugin_repo(setup_fake_plugin):
+    _create_git_repo(setup_fake_plugin)
+    return setup_fake_plugin
 
 
 def _create_ilias_dirs(path):

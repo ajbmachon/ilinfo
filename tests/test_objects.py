@@ -23,8 +23,8 @@ class TestIliasFileParser:
     def test_init(self):
         assert self.file_parser
 
-    @pt.mark.sub_dir("Customer1")
     def test_parse_from_pathfinder(self, setup_fake_ilias):
+        ilias_path = setup_fake_ilias("Customer_1")
         results = self.file_parser.parse_from_pathfinder()
         pass
 
@@ -50,9 +50,8 @@ class TestIliasFileParser:
                             'system': {}}
 
     def test_parse_plugin(self, setup_git_plugin_repo):
-        source_file = osp.join(str(setup_git_plugin_repo), 'plugin.php')
-        plugin_info_dict = self.file_parser.parse_plugin(source_file)
-        assert plugin_info_dict == {'source_file': source_file, 'ilias_max_version': '5.4.999',
+        plugin_info_dict = self.file_parser.parse_plugin(setup_git_plugin_repo)
+        assert plugin_info_dict == {'source_file': setup_git_plugin_repo / 'plugin.php', 'ilias_max_version': '5.4.999',
                                     'ilias_min_version': '5.3.0', 'responsible': 'Andre Machon', 'version': '1.1.0',
                                     'remotes': {
                                         'alternate': 'https://github.com/Amstutz/ILIAS.git/ILIAS-eLearning/ILIAS.git',
@@ -94,11 +93,11 @@ class TestIliasPathFinder:
     def test_init(self):
         assert self.pathfinder
 
-    def test_find_installations(self, tmp_path):
-        ilias_path_1 = self._create_fake_ilias_in_filesystem(tmp_path / 'ILIAS_1')
-        ilias_path_2 = self._create_fake_ilias_in_filesystem(tmp_path / 'ILIAS_2')
+    def test_find_installations(self, setup_fake_ilias):
+        ilias_path_1 = setup_fake_ilias('Customer_1')
+        ilias_path_2 = setup_fake_ilias('Customer_2')
 
-        ilias_paths_itr = self.pathfinder.find_installations(tmp_path)
+        ilias_paths_itr = self.pathfinder.find_installations(osp.dirname(osp.dirname(ilias_path_1)))
         assert next(ilias_paths_itr) == str(ilias_path_1)
         assert next(ilias_paths_itr) == str(ilias_path_2)
 
@@ -116,9 +115,6 @@ class TestIliasPathFinder:
         plugin_path_itr = self.pathfinder.find_plugins(tmp_path)
         assert next(plugin_path_itr) == str(plugin_path_1)
         assert next(plugin_path_itr) == str(plugin_path_2)
-
-    def _create_fake_ilias_in_filesystem(self, path):
-        pass
 
     def _create_fake_plugin_in_filesystem(self, setup_fake_ilias):
         ilias_path = setup_fake_ilias

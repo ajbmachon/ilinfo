@@ -107,9 +107,9 @@ class IliasFileParser:
         self._data['client.ini.php'].append(d)
         return d
 
-    def parse_plugin(self, file_path, encoding='utf-8'):
-        plugin_php_dict = self.parse_plugin_php(file_path, encoding)
-        plugin_php_dict['remotes'] = self._git_helper.parse_git_remotes(osp.dirname(file_path))
+    def parse_plugin(self, plugin_path, encoding='utf-8'):
+        plugin_php_dict = self.parse_plugin_php(plugin_path / 'plugin.php', encoding)
+        plugin_php_dict['remotes'] = self._git_helper.parse_git_remotes(plugin_path)
         # replace last entry in plugin.php list with our extended version
         self._data['plugin.php'][-1:] = plugin_php_dict
         return plugin_php_dict
@@ -214,7 +214,7 @@ class IliasPathFinder:
         excluded_dirs = self._extend_excluded_folders(excluded_folders)
         excluded_dirs.append('Customizing/global')
 
-        for file in find_files_recursive(start_path, 'ilias.php', excluded_dirs):
+        for file in find_files_recursive(str(start_path), 'ilias.php', excluded_dirs):
             ilias_path = osp.dirname(file)
             if ilias_path not in self._ilias_paths:
                 self._ilias_paths[ilias_path] = {'plugins': {}, 'files': self._find_analyzable_files(ilias_path)}
