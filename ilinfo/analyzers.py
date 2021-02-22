@@ -45,7 +45,7 @@ class IliasAnalyzer:
         self._pathfinder.find_installations(start_path, self._excluded_folders)
         self._pathfinder.find_plugins(start_path, self._excluded_folders)
 
-        # for each installation found create a iliaspathfinder and parse files
+        # for each installation found create a iliasfileparser and parse files
 
         # output results via output processor
         pass
@@ -63,23 +63,37 @@ class IliasFileParser:
     """
 
     def __init__(self):
-        self._data = {
+        self._data = {}
+        self._current_installation = {
+            'ilias_path': '',
             'client.ini.php': [],
             'plugin.php': []
         }
         self._git_helper = GitHelper()
 
-    __slots__ = ['_data', '_git_helper']
+    __slots__ = ['_data', '_git_helper', '_current_installation']
 
     @property
     def data(self):
+        self._append_current_installation_to_data()
         return deepcopy(self._data)
+
+    def _append_current_installation_to_data(self):
+        ilias_path = self._current_installation.get('ilias_path', None)
+        if ilias_path and ilias_path not in self._data:
+            self._data[ilias_path] = self._current_installation
+            self._current_installation = {
+                'ilias_path': '',
+                'client.ini.php': [],
+                'plugin.php': []
+            }
 
     def parse_from_pathfinder(self, pathfinder):
         if not isinstance(pathfinder, IliasPathFinder):
             raise TypeError("Param pathfinder needs to be of class IliasPathFinder")
 
         for ilias_path, ilias_dict in pathfinder:
+            self._current_installation['ilias_path'] = ilias_path
             ilias_files = ilias_dict.get('files', {})
 
             self.parse_ilias_ini(ilias_files.get('ilias.ini.php'))
@@ -91,7 +105,9 @@ class IliasFileParser:
                 # get dirname as parse_plugin does not expect full path to plugin.php
                 self.parse_plugin(osp.dirname(pl_php_path))
 
-        return deepcopy(self._data)
+            self._append_current_installation_to_data()
+
+        return self.data
 
     def parse_ilias_ini(self, file_path):
         """Parses ilias.ini.php file for information about ILIAS installation
@@ -105,7 +121,7 @@ class IliasFileParser:
             "server": ['http_path', 'absolute_path'],
             "clients": ['path', 'inifile', 'datadir', 'default']
         })
-        self._data['ilias.ini.php'] = d
+        self._current_installation['ilias.ini.php'] = d
         return d
 
     def parse_client_ini(self, file_path):
@@ -122,14 +138,14 @@ class IliasFileParser:
             'language': ['default'],
             'layout': ['skin', 'style']
         })
-        self._data['client.ini.php'].append(d)
+        self._current_installation['client.ini.php'].append(d)
         return d
 
     def parse_plugin(self, plugin_path, encoding='utf-8'):
         plugin_php_dict = self.parse_plugin_php(plugin_path / 'plugin.php', encoding)
         plugin_php_dict['remotes'] = self._git_helper.parse_git_remotes(plugin_path)
         # replace last entry in plugin.php list with our extended version
-        self._data['plugin.php'][-1:] = plugin_php_dict
+        self._current_installation['plugin.php'][-1:] = plugin_php_dict
         return plugin_php_dict
 
     def parse_plugin_php(self, file_path, encoding='utf-8'):
@@ -155,7 +171,7 @@ class IliasFileParser:
                 if result_define:
                     d[result_define.groups()[0]] = result_define.groups()[1]
 
-        self._data['plugin.php'].append(d)
+        self._current_installation['plugin.php'].append(d)
         return d
 
     def parse_version(self, file_path):
@@ -167,7 +183,7 @@ class IliasFileParser:
         """
 
         version = re.search(r"\"(\d\.[\d\.?]+)\"", open(file_path).read()).groups()[0]
-        self._data['ilias-version']: version
+        self._current_installation['ilias-version']: version
         return version
 
     def parse_gitmodules(self, file_path):
@@ -194,7 +210,7 @@ class IliasFileParser:
                     branch_groups[i][0]: branch_groups[i][1]
                 }
 
-        self._data['submodules'] = d
+        self._current_installation['submodules'] = d
         return d
 
 

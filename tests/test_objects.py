@@ -31,39 +31,44 @@ class TestIliasFileParser:
         pathfinder.find_plugins(ilias_path)
         results = self.file_parser.parse_from_pathfinder(pathfinder)
 
-        assert results == {'client.ini.php': [{'auth': {}, 'cache': {}, 'cache_activated_components': {},
-                                               'client': {'access': '1', 'name': 'CLIENT_NAME'},
-                                               'db': {'host': 'localhost', 'name': 'generic_db_name_123',
-                                                      'pass': 'generic_password_123', 'port': '', 'type': 'innodb',
-                                                      'user': 'generic_user_123'}, 'language': {'default': 'de'},
-                                               'layout': {'skin': 'default', 'style': 'delos'}, 'server': {},
-                                               'session': {},
-                                               'source_file': results.get('client.ini.php', {})[0].get('source_file'),
-                                               'system': {}}], 'ilias.ini.php': {
-            'clients': {'datadir': '/srv/www/seminar/data', 'default': 'CLIENT_NAME', 'inifile': 'client.ini.php',
-                        'path': 'data'}, 'debian': {}, 'https': {}, 'log': {}, 'redhat': {},
-            'server': {'absolute_path': '/srv/www/ilias', 'http_path': 'https://ilias.website.net'}, 'setup': {},
-            'source_file': results.get('ilias.ini.php', {}).get('source_file'),
-            'suse': {}, 'tools': {}},
-                           'plugin.php': [],
-                           'submodules': {
-                               'CountryLicenseTypes': {
-                                   'branch': 'r6',
-                                   'path': 'Customizing/global/plugins/Services/Cron/CronHook/CountryLicenseTypes',
-                                   'url': '../plugins/CountryLicenseTypes.git'},
-                               'DBASManager': {
-                                   'branch': 'Release_7.0',
-                                   'path': 'Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/DBASManager',
-                                   'url': '../../../iliasaddons/DBASManager.git'},
-                               'LPOverview': {
-                                   'branch': 'r6',
-                                   'path': 'Customizing/global/plugins/Services/COPage/PageComponent/LPOverview',
-                                   'url': '../../../iliasplugins/LPOverview.git'},
-                               'LearnerGuidance': {
-                                   'branch': 'Release_7.0',
-                                   'path': 'Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/LearnerGuidance',
-                                   'url': '../../../iliasaddons/LearnerGuidance.git'}
-                           }}
+        for ilias_path, result in results.items():
+            assert result == {
+                'ilias_path': ilias_path,
+                'client.ini.php': [{'auth': {}, 'cache': {}, 'cache_activated_components': {},
+                                    'client': {'access': '1', 'name': 'CLIENT_NAME'},
+                                    'db': {'host': 'localhost', 'name': 'generic_db_name_123',
+                                           'pass': 'generic_password_123', 'port': '', 'type': 'innodb',
+                                           'user': 'generic_user_123'}, 'language': {'default': 'de'},
+                                    'layout': {'skin': 'default', 'style': 'delos'}, 'server': {},
+                                    'session': {},
+                                    'source_file': result.get('client.ini.php', {})[0].get('source_file'),
+                                    'system': {}}], 'ilias.ini.php': {
+                    'clients': {'datadir': '/srv/www/seminar/data', 'default': 'CLIENT_NAME',
+                                'inifile': 'client.ini.php',
+                                'path': 'data'}, 'debian': {}, 'https': {}, 'log': {}, 'redhat': {},
+                    'server': {'absolute_path': '/srv/www/ilias', 'http_path': 'https://ilias.website.net'},
+                    'setup': {},
+                    'source_file': result.get('ilias.ini.php', {}).get('source_file'),
+                    'suse': {}, 'tools': {}},
+                'plugin.php': [],
+                'submodules': {
+                    'CountryLicenseTypes': {
+                        'branch': 'r6',
+                        'path': 'Customizing/global/plugins/Services/Cron/CronHook/CountryLicenseTypes',
+                        'url': '../plugins/CountryLicenseTypes.git'},
+                    'DBASManager': {
+                        'branch': 'Release_7.0',
+                        'path': 'Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/DBASManager',
+                        'url': '../../../iliasaddons/DBASManager.git'},
+                    'LPOverview': {
+                        'branch': 'r6',
+                        'path': 'Customizing/global/plugins/Services/COPage/PageComponent/LPOverview',
+                        'url': '../../../iliasplugins/LPOverview.git'},
+                    'LearnerGuidance': {
+                        'branch': 'Release_7.0',
+                        'path': 'Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/LearnerGuidance',
+                        'url': '../../../iliasaddons/LearnerGuidance.git'}
+                }}
 
         with pt.raises(TypeError):
             self.file_parser.parse_from_pathfinder("/tmp/exmaple/path")
