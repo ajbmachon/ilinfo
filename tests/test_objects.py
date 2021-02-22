@@ -1,6 +1,7 @@
 # Created by Andre Machon 14/02/2021
 import pytest as pt
 from os import path as osp
+from pathlib import Path
 from ilinfo import IliasFileParser, IliasPathFinder, GitHelper, IliasAnalyzer
 
 
@@ -25,8 +26,47 @@ class TestIliasFileParser:
 
     def test_parse_from_pathfinder(self, setup_fake_ilias):
         ilias_path = setup_fake_ilias("Customer_1")
-        results = self.file_parser.parse_from_pathfinder()
-        pass
+        pathfinder = IliasPathFinder()
+        pathfinder.find_installations(ilias_path)
+        pathfinder.find_plugins(ilias_path)
+        results = self.file_parser.parse_from_pathfinder(pathfinder)
+
+        assert results == {'client.ini.php': [{'auth': {}, 'cache': {}, 'cache_activated_components': {},
+                                               'client': {'access': '1', 'name': 'CLIENT_NAME'},
+                                               'db': {'host': 'localhost', 'name': 'generic_db_name_123',
+                                                      'pass': 'generic_password_123', 'port': '', 'type': 'innodb',
+                                                      'user': 'generic_user_123'}, 'language': {'default': 'de'},
+                                               'layout': {'skin': 'default', 'style': 'delos'}, 'server': {},
+                                               'session': {},
+                                               'source_file': results.get('client.ini.php', {})[0].get('source_file'),
+                                               'system': {}}], 'ilias.ini.php': {
+            'clients': {'datadir': '/srv/www/seminar/data', 'default': 'CLIENT_NAME', 'inifile': 'client.ini.php',
+                        'path': 'data'}, 'debian': {}, 'https': {}, 'log': {}, 'redhat': {},
+            'server': {'absolute_path': '/srv/www/ilias', 'http_path': 'https://ilias.website.net'}, 'setup': {},
+            'source_file': results.get('ilias.ini.php', {}).get('source_file'),
+            'suse': {}, 'tools': {}},
+                           'plugin.php': [],
+                           'submodules': {
+                               'CountryLicenseTypes': {
+                                   'branch': 'r6',
+                                   'path': 'Customizing/global/plugins/Services/Cron/CronHook/CountryLicenseTypes',
+                                   'url': '../plugins/CountryLicenseTypes.git'},
+                               'DBASManager': {
+                                   'branch': 'Release_7.0',
+                                   'path': 'Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/DBASManager',
+                                   'url': '../../../iliasaddons/DBASManager.git'},
+                               'LPOverview': {
+                                   'branch': 'r6',
+                                   'path': 'Customizing/global/plugins/Services/COPage/PageComponent/LPOverview',
+                                   'url': '../../../iliasplugins/LPOverview.git'},
+                               'LearnerGuidance': {
+                                   'branch': 'Release_7.0',
+                                   'path': 'Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/LearnerGuidance',
+                                   'url': '../../../iliasaddons/LearnerGuidance.git'}
+                           }}
+
+        with pt.raises(TypeError):
+            self.file_parser.parse_from_pathfinder("/tmp/exmaple/path")
 
     def test_parse_ilias_ini(self, ilias_ini_path):
         ini_dict = self.file_parser.parse_ilias_ini(ilias_ini_path)
@@ -93,13 +133,24 @@ class TestIliasPathFinder:
     def test_init(self):
         assert self.pathfinder
 
+    def test_iteration(self, setup_fake_ilias):
+        ilias_path_1 = setup_fake_ilias('Customer_1')
+        ilias_path_2 = setup_fake_ilias('Customer_2')
+        ilias_paths = self.pathfinder.find_installations(osp.dirname(osp.dirname(ilias_path_1)))
+
+        il_path, il_dict = next(self.pathfinder)
+        assert il_path == str(ilias_path_1)
+        assert isinstance(il_dict, dict)
+        il_path, il_dict = next(self.pathfinder)
+        assert il_path == str(ilias_path_2)
+
     def test_find_installations(self, setup_fake_ilias):
         ilias_path_1 = setup_fake_ilias('Customer_1')
         ilias_path_2 = setup_fake_ilias('Customer_2')
+        ilias_paths = self.pathfinder.find_installations(osp.dirname(osp.dirname(ilias_path_1)))
 
-        ilias_paths_itr = self.pathfinder.find_installations(osp.dirname(osp.dirname(ilias_path_1)))
-        assert next(ilias_paths_itr) == str(ilias_path_1)
-        assert next(ilias_paths_itr) == str(ilias_path_2)
+        assert ilias_paths[0] == str(ilias_path_1)
+        assert ilias_paths[1] == str(ilias_path_2)
 
         files = self.pathfinder.ilias_paths[str(ilias_path_1)]['files']
         assert '.gitmodules' in files
@@ -107,22 +158,15 @@ class TestIliasPathFinder:
         assert 'inc.ilias_version.php' in files
         assert 'client.ini.php' in files
 
-    def test_find_plugins(self, tmp_path):
-        # TODO call setup_fake_plugin fixture twice with different path!
-        plugin_path_1 = self._create_fake_plugin_in_filesystem(tmp_path / 'ILIAS_1')
-        plugin_path_2 = self._create_fake_plugin_in_filesystem(tmp_path / 'ILIAS_2')
+    def test_find_plugins(self, tmp_path, setup_fake_plugin):
+        plugin_path_1 = setup_fake_plugin("FakePlugin1")
+        plugin_path_2 = setup_fake_plugin("FakePlugin2")
+        print(plugin_path_1, plugin_path_2, sep="")
 
-        plugin_path_itr = self.pathfinder.find_plugins(tmp_path)
-        assert next(plugin_path_itr) == str(plugin_path_1)
-        assert next(plugin_path_itr) == str(plugin_path_2)
-
-    def _create_fake_plugin_in_filesystem(self, setup_fake_ilias):
-        ilias_path = setup_fake_ilias
-        plugin_path = ilias_path / 'Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/UserTakeOver'
-        plugin_path.mkdir(exist_ok=True, parents=True)
-        f = plugin_path / "plugin.php"
-        f.touch()
-        return plugin_path
+        plugin_paths = self.pathfinder.find_plugins(tmp_path)
+        print(plugin_paths)
+        assert plugin_paths[0] == str(plugin_path_1)
+        assert plugin_paths[1] == str(plugin_path_2)
 
 
 class TestGitHelper:
@@ -136,5 +180,3 @@ class TestGitHelper:
         remotes = self.git_helper.parse_git_remotes(setup_git_plugin_repo)
         assert remotes == {'alternate': 'https://github.com/Amstutz/ILIAS.git/ILIAS-eLearning/ILIAS.git',
                            'origin': 'https://github.com/ILIAS-eLearning/ILIAS.git'}
-
-

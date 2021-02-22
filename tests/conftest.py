@@ -61,26 +61,30 @@ def setup_fake_ilias(tmp_path, ilias_ini_path, inc_ilias_version_php_path, clien
 
 @pt.fixture
 def setup_fake_plugin(setup_fake_ilias, plugin_php_path):
-    ilias_path = setup_fake_ilias()
-    plugin_path = ilias_path / 'Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/UserTakeOver'
-    plugin_path.mkdir(exist_ok=True, parents=True)
-    plugin_php_path.copy(plugin_path / "plugin.php")
-    return plugin_path
+    def _fake_plugin(name="TestPlugin"):
+        ilias_path = setup_fake_ilias()
+        plugin_path = ilias_path / f'Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/{name}'
+        plugin_path.mkdir(exist_ok=True, parents=True)
+        plugin_php_path.copy(plugin_path / "plugin.php")
+        return plugin_path
+
+    return _fake_plugin
 
 
 @pt.fixture
 def setup_git_plugin_repo(setup_fake_plugin):
-    _create_git_repo(setup_fake_plugin)
-    return setup_fake_plugin
+    plugin_path = setup_fake_plugin("UserTakeOver")
+    _create_git_repo(plugin_path)
+    return plugin_path
 
 
 def _create_ilias_dirs(path):
     path = path / 'ILIAS'
-    path.mkdir(parents=True)
+    path.mkdir(parents=True, exist_ok=True)
     p2 = path / 'include'
-    p2.mkdir(parents=True)
+    p2.mkdir(parents=True, exist_ok=True)
     p3 = path / 'data/example_client'
-    p3.mkdir(parents=True)
+    p3.mkdir(parents=True, exist_ok=True)
     return path, p2, p3
 
 

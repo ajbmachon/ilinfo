@@ -75,6 +75,24 @@ class IliasFileParser:
     def data(self):
         return deepcopy(self._data)
 
+    def parse_from_pathfinder(self, pathfinder):
+        if not isinstance(pathfinder, IliasPathFinder):
+            raise TypeError("Param pathfinder needs to be of class IliasPathFinder")
+
+        for ilias_path, ilias_dict in pathfinder:
+            ilias_files = ilias_dict.get('files', {})
+
+            self.parse_ilias_ini(ilias_files.get('ilias.ini.php'))
+            self.parse_gitmodules(ilias_files.get('.gitmodules'))
+
+            for client_ini in ilias_files.get('client.ini.php'):
+                self.parse_client_ini(client_ini)
+            for pl_name, pl_php_path in ilias_dict.get('plugins').items():
+                # get dirname as parse_plugin does not expect full path to plugin.php
+                self.parse_plugin(osp.dirname(pl_php_path))
+
+        return deepcopy(self._data)
+
     def parse_ilias_ini(self, file_path):
         """Parses ilias.ini.php file for information about ILIAS installation
 
@@ -192,6 +210,17 @@ class IliasPathFinder:
 
     __slots__ = ('_ilias_paths', '_excluded')
 
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        while self._ilias_paths:
+            for path, d in self._ilias_paths.items():
+                del self._ilias_paths[path]
+                return path, d
+        else:
+            raise StopIteration
+
     @property
     def ilias_paths(self):
         return deepcopy(self._ilias_paths)
@@ -213,12 +242,14 @@ class IliasPathFinder:
         # TODO could add behaviour to only find active installations based on the presence of ilias.ini.php
         excluded_dirs = self._extend_excluded_folders(excluded_folders)
         excluded_dirs.append('Customizing/global')
+        ilias_paths = []
 
         for file in find_files_recursive(str(start_path), 'ilias.php', excluded_dirs):
             ilias_path = osp.dirname(file)
             if ilias_path not in self._ilias_paths:
                 self._ilias_paths[ilias_path] = {'plugins': {}, 'files': self._find_analyzable_files(ilias_path)}
-            yield ilias_path
+            ilias_paths.append(ilias_path)
+        return ilias_paths
 
     def find_plugins(self, start_path, excluded_folders=None):
         """Recursively searches a path for all ILIAS plugins
@@ -231,14 +262,16 @@ class IliasPathFinder:
         :rtype: str
         """
         excluded_dirs = self._extend_excluded_folders(excluded_folders)
+        plugin_paths = []
 
         for file in find_files_recursive(start_path, 'plugin.php', excluded_dirs):
             plugin_path = osp.dirname(file)
+            plugin_paths.append(plugin_path)
             for path, d in self._ilias_paths.items():
                 if path in plugin_path:
                     d['plugins'][osp.basename(plugin_path)] = file
 
-            yield plugin_path
+        return plugin_paths
 
     def _find_analyzable_files(self, ilias_path):
         d = {
