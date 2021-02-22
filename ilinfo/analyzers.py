@@ -2,6 +2,7 @@
 import re
 import subprocess
 from os import path as osp
+from pathlib import Path
 from copy import deepcopy
 
 from ilinfo.utils import parse_ini_to_dict, find_files_recursive
@@ -142,7 +143,12 @@ class IliasFileParser:
         return d
 
     def parse_plugin(self, plugin_path, encoding='utf-8'):
-        plugin_php_dict = self.parse_plugin_php(plugin_path / 'plugin.php', encoding)
+        if isinstance(plugin_path, Path):
+            plugin_php_path = plugin_path / 'plugin.php'
+        else:
+            plugin_php_path = f"{plugin_path}/plugin.php"
+
+        plugin_php_dict = self.parse_plugin_php(plugin_php_path, encoding)
         plugin_php_dict['remotes'] = self._git_helper.parse_git_remotes(plugin_path)
         # replace last entry in plugin.php list with our extended version
         self._current_installation['plugin.php'][-1:] = plugin_php_dict

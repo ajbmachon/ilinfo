@@ -54,6 +54,7 @@ def setup_fake_ilias(tmp_path, ilias_ini_path, inc_ilias_version_php_path, clien
         client_ini_path.copy(client_data_path / 'client.ini.php')
         f = ilias_path / 'ilias.php'
         f.touch()
+
         return ilias_path
 
     return _fake_ilias

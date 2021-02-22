@@ -24,11 +24,13 @@ class TestIliasFileParser:
     def test_init(self):
         assert self.file_parser
 
-    def test_parse_from_pathfinder(self, setup_fake_ilias):
-        ilias_path = setup_fake_ilias("Customer_1")
+    def test_parse_from_pathfinder(self, setup_fake_plugin):
+        plugin_path = setup_fake_plugin("Customer_1")
+        il_path = plugin_path.parents[6]
         pathfinder = IliasPathFinder()
-        pathfinder.find_installations(ilias_path)
-        pathfinder.find_plugins(ilias_path)
+        pathfinder.find_installations(il_path)
+        plugins = pathfinder.find_plugins(il_path)
+        print("Plugins: ", plugins)
         results = self.file_parser.parse_from_pathfinder(pathfinder)
 
         for ilias_path, result in results.items():
@@ -50,7 +52,12 @@ class TestIliasFileParser:
                     'setup': {},
                     'source_file': result.get('ilias.ini.php', {}).get('source_file'),
                     'suse': {}, 'tools': {}},
-                'plugin.php': [],
+                'plugin.php': ['source_file',
+                               'version',
+                               'ilias_min_version',
+                               'ilias_max_version',
+                               'responsible',
+                               'remotes'],
                 'submodules': {
                     'CountryLicenseTypes': {
                         'branch': 'r6',
