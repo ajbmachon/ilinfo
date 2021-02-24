@@ -1,7 +1,9 @@
 # Created by Andre Machon 16/02/2021
+import json
 from abc import ABC, abstractmethod
 from copy import deepcopy
 from pathlib import Path
+from ilinfo import analyzers
 
 __all__ = ['OutputProcessor', 'JSONOutput']
 
@@ -15,7 +17,7 @@ class OutputProcessor(ABC):
         pass
 
     @abstractmethod
-    def output_data(self):
+    def output_data(self, file_parser):
         pass
 
 
@@ -42,6 +44,18 @@ class JSONOutput(OutputProcessor):
         # combine ilias_info_dicts data to single dict
         pass
 
-    def output_data(self):
-        # output data to specified directory
-        pass
+    def output_data(self, file_parser):
+        """Outputs data analyzed by IliasFileParser instance to JSON file
+
+        :param file_parser: IliasFileParser Instance filled with data
+        :type file_parser: IliasFileParser
+        :return:
+        """
+        if not isinstance(file_parser, analyzers.IliasFileParser):
+            raise TypeError("Param file_parser needs to be of type IliasFileParser")
+        if not file_parser.data:
+            raise ValueError("IliasFileParser has no data, did you analyze an Installation with it?")
+
+        with open(Path(self._output_path) / 'ilinfo.json', 'w') as jsonfile:
+            json.dump(file_parser.data, jsonfile)
+        return True

@@ -1,7 +1,7 @@
 # Created by Andre Machon 14/02/2021
 import pytest as pt
+import json
 from os import path as osp
-from pathlib import Path
 from ilinfo import IliasFileParser, IliasPathFinder, GitHelper, IliasAnalyzer
 
 
@@ -15,6 +15,14 @@ class TestIliasAnalyzer:
         with pt.raises(TypeError):
             IliasAnalyzer(IliasFileParser(), "", "", "", "")
             IliasAnalyzer(1, "", GitHelper(), "")
+
+    def test_analyze_path(self, setup_fake_plugin):
+        plugin_path_1 = setup_fake_plugin('TestPlugin1')
+        plugin_path_2 = setup_fake_plugin('TestPlugin2')
+        il_path = plugin_path_1.parents[6]
+        self.analyzer.analyze_path(il_path)
+
+        assert False
 
 
 class TestIliasFileParser:
@@ -30,7 +38,6 @@ class TestIliasFileParser:
         pathfinder = IliasPathFinder()
         pathfinder.find_installations(il_path)
         plugins = pathfinder.find_plugins(il_path)
-        print("Plugins: ", plugins)
         results = self.file_parser.parse_from_pathfinder(pathfinder)
 
         for ilias_path, result in results.items():

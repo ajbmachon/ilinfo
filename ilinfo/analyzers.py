@@ -43,10 +43,10 @@ class IliasAnalyzer:
 
     def analyze_path(self, start_path):
         # analyze path recursively with iliaspathfinder
-        self._pathfinder.find_installations(start_path, self._excluded_folders)
-        self._pathfinder.find_plugins(start_path, self._excluded_folders)
+        # self._pathfinder.find_installations(start_path, self._excluded_folders)
+        # self._pathfinder.find_plugins(start_path, self._excluded_folders)
 
-        # for each installation found create a iliasfileparser and parse files
+        # for each installation found parse files via iliasfileparser and
 
         # output results via output processor
         pass

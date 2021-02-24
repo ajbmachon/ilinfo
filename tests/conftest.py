@@ -1,12 +1,9 @@
 # Created by Andre Machon 14/02/2021
-import shutil
 import subprocess
-
 import pytest as pt
 import os.path as osp
 from pathlib import Path
 
-# FIXTURE_FILES_DIR = osp.join(osp.dirname(osp.realpath(__file__)), 'fixtures')
 FIXTURE_FILES_DIR = Path(osp.dirname(osp.realpath(__file__))) / 'fixtures'
 
 
@@ -56,7 +53,6 @@ def setup_fake_ilias(tmp_path, ilias_ini_path, inc_ilias_version_php_path, clien
         f.touch()
 
         return ilias_path
-
     return _fake_ilias
 
 
