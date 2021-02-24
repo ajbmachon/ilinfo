@@ -1,28 +1,29 @@
 # Created by Andre Machon 14/02/2021
 import pytest as pt
 import json
+from pathlib import Path
 from os import path as osp
-from ilinfo import IliasFileParser, IliasPathFinder, GitHelper, IliasAnalyzer
+from ilinfo import IliasFileParser, IliasPathFinder, GitHelper, Analyzer
 
 
-class TestIliasAnalyzer:
+class TestAnalyzer:
     def setup(self):
-        self.analyzer = IliasAnalyzer()
+        self.analyzer = Analyzer()
 
     def test_init(self):
         assert self.analyzer
 
         with pt.raises(TypeError):
-            IliasAnalyzer(IliasFileParser(), "", "", "", "")
-            IliasAnalyzer(1, "", GitHelper(), "")
+            Analyzer(IliasFileParser(), "", "", "", "")
+            Analyzer(1, "", GitHelper(), "")
 
     def test_analyze_path(self, setup_fake_plugin):
         plugin_path_1 = setup_fake_plugin('TestPlugin1')
-        plugin_path_2 = setup_fake_plugin('TestPlugin2')
+        setup_fake_plugin('TestPlugin2')
         il_path = plugin_path_1.parents[6]
-        self.analyzer.analyze_path(il_path)
+        json_file_path = self.analyzer.analyze_path(il_path)
 
-        assert False
+        assert Path.is_file(json_file_path)
 
 
 class TestIliasFileParser:

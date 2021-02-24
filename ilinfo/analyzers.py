@@ -8,10 +8,10 @@ from copy import deepcopy
 from ilinfo.utils import parse_ini_to_dict, find_files_recursive
 from ilinfo.output_processors import OutputProcessor, JSONOutput
 
-__all__ = ['IliasAnalyzer', 'IliasFileParser', 'IliasPathFinder', 'GitHelper']
+__all__ = ['Analyzer', 'IliasFileParser', 'IliasPathFinder', 'GitHelper']
 
 
-class IliasAnalyzer:
+class Analyzer:
     """Aggregates the IliasFileParser, IliasPathFinder and GitHelper to analyze the systems ILIAS installations"""
 
     def __init__(self, fileparser=None, pathfinder=None, git_helper=None, output_processor=None, excluded_folders=None):
@@ -24,7 +24,8 @@ class IliasAnalyzer:
         self._output_processor = output_processor or JSONOutput()
         self._excluded_folders = excluded_folders
 
-    def _check_init_params(self, fileparser=None, pathfinder=None, git_helper=None, output_processor=None, excluded_folders=None):
+    def _check_init_params(self, fileparser=None, pathfinder=None, git_helper=None, output_processor=None,
+                           excluded_folders=None):
         if fileparser is not None:
             if not isinstance(fileparser, IliasFileParser):
                 raise TypeError('Param fileparser needs to be of type IliasFileParser, or None')
@@ -42,14 +43,10 @@ class IliasAnalyzer:
                 raise TypeError('Param excluded_folders needs to be of type dict, or None')
 
     def analyze_path(self, start_path):
-        # analyze path recursively with iliaspathfinder
-        # self._pathfinder.find_installations(start_path, self._excluded_folders)
-        # self._pathfinder.find_plugins(start_path, self._excluded_folders)
-
-        # for each installation found parse files via iliasfileparser and
-
-        # output results via output processor
-        pass
+        self._pathfinder.find_installations(start_path, self._excluded_folders)
+        self._pathfinder.find_plugins(start_path, self._excluded_folders)
+        self._file_parser.parse_from_pathfinder(self._pathfinder)
+        return self._output_processor.output_data(self._file_parser)
 
 
 class IliasFileParser:

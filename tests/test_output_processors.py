@@ -36,10 +36,10 @@ class TestJsonOutputProcessor:
         results = parser.parse_from_pathfinder(finder)
         ilias_path, result = list(results.items())[0]
 
-        success = self.json_out.output_data(file_parser=parser)
+        json_file_path = self.json_out.output_data(file_parser=parser)
         file_path = Path(self.out_path) / 'ilinfo.json'
-        assert success
-        assert Path.is_file(file_path) is True
+        assert json_file_path == file_path
+        assert Path.is_file(file_path)
         assert json.load(open(file_path, 'r')) == {
             ilias_path: {
                 'ilias_path': ilias_path,
@@ -81,3 +81,8 @@ class TestJsonOutputProcessor:
                 }
             }
         }
+
+        with pt.raises(TypeError):
+            self.json_out.output_data({})
+        with pt.raises(ValueError):
+            self.json_out.output_data(IliasFileParser())

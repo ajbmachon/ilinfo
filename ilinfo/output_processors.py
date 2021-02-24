@@ -56,6 +56,7 @@ class JSONOutput(OutputProcessor):
         if not file_parser.data:
             raise ValueError("IliasFileParser has no data, did you analyze an Installation with it?")
 
-        with open(Path(self._output_path) / 'ilinfo.json', 'w') as jsonfile:
+        json_file_path = Path(self._output_path) / 'ilinfo.json'
+        with open(json_file_path, 'w') as jsonfile:
             json.dump(file_parser.data, jsonfile)
-        return True
+        return json_file_path
