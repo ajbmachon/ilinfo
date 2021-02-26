@@ -12,7 +12,7 @@ __all__ = ['Analyzer', 'IliasFileParser', 'IliasPathFinder', 'GitHelper']
 
 
 class Analyzer:
-    """Aggregates the IliasFileParser, IliasPathFinder and GitHelper to analyze the systems ILIAS installations"""
+    """Aggregates the IliasFileParser, IliasPathFinder and GitHelper to main the systems ILIAS installations"""
 
     def __init__(self, fileparser=None, pathfinder=None, git_helper=None, output_processor=None, excluded_folders=None):
         self._data = {}
@@ -36,7 +36,7 @@ class Analyzer:
             if not isinstance(git_helper, GitHelper):
                 raise TypeError('Param git_helper needs to be of type GitHelper, or None')
         if output_processor is not None:
-            if not issubclass(output_processor, OutputProcessor):
+            if not issubclass(type(output_processor), OutputProcessor):
                 raise TypeError('Param output_processor needs to be a subclass of OutputProcessor, or None')
         if excluded_folders is not None:
             if not isinstance(excluded_folders, dict):
@@ -198,20 +198,23 @@ class IliasFileParser:
         :rtype: dict
         """
         d = {}
-        with open(file_path, 'r') as gitmodules:
-            text = gitmodules.read()
+        try:
+            with open(file_path, 'r') as gitmodules:
+                text = gitmodules.read()
 
-            names = re.findall(r"\[submodule\s\"(\w+)\"]", text)
-            path_groups = re.findall(r"(path)\s=\s([\w+/]+)", text)
-            url_groups = re.findall(r"(url)\s=\s([./]+[\w/.]+)", text)
-            branch_groups = re.findall(r"(branch)\s=\s([\w /.]+)", text)
+                names = re.findall(r"\[submodule\s\"(\w+)\"]", text)
+                path_groups = re.findall(r"(path)\s=\s([\w+/]+)", text)
+                url_groups = re.findall(r"(url)\s=\s([./]+[\w/.]+)", text)
+                branch_groups = re.findall(r"(branch)\s=\s([\w /.]+)", text)
 
-            for i in range(len(names)):
-                d[names[i]] = {
-                    path_groups[i][0]: path_groups[i][1],
-                    url_groups[i][0]: url_groups[i][1],
-                    branch_groups[i][0]: branch_groups[i][1]
-                }
+                for i in range(len(names)):
+                    d[names[i]] = {
+                        path_groups[i][0]: path_groups[i][1],
+                        url_groups[i][0]: url_groups[i][1],
+                        branch_groups[i][0]: branch_groups[i][1]
+                    }
+        except FileNotFoundError as err:
+            pass # TODO log here
 
         self._current_installation['submodules'] = d
         return d

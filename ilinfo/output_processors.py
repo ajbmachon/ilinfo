@@ -54,7 +54,7 @@ class JSONOutput(OutputProcessor):
         if not isinstance(file_parser, analyzers.IliasFileParser):
             raise TypeError("Param file_parser needs to be of type IliasFileParser")
         if not file_parser.data:
-            raise ValueError("IliasFileParser has no data, did you analyze an Installation with it?")
+            raise ValueError("IliasFileParser has no data, did you main an Installation with it?")
 
         json_file_path = Path(self._output_path) / 'ilinfo.json'
         with open(json_file_path, 'w') as jsonfile:
