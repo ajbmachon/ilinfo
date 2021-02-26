@@ -24,4 +24,11 @@ setuptools.setup(
     extras_require={
         'test': ['coverage', 'pytest', 'pytest-cov'],
     },
+    test_suite='tests',
+    entry_points={
+        'console_scripts': [
+            'ilinfo=ilinfo.cli:main',
+            'ilias-info=ilinfo.cli:main',
+        ]
+    }
 )
